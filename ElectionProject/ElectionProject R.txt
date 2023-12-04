@@ -1,0 +1,470 @@
+# Function to mimic API1 in R
+API1 <- function(in_newname, in_date, param_precinct) {
+  # Placeholder for out_winner
+  out_winner <- NA
+
+  # Check if timestamp is correct
+  var_check2 <- sum(Penna$timestamp == in_date)
+  if (var_check2 <= 0) {
+    out_winner <- 0
+    stop("incorrect timestamp")
+  }
+
+  # Check if precinct is correct
+  var_check1 <- sum(Penna$precinct == param_precinct)
+  if (var_check1 <= 0) {
+    out_winner <- 0
+    stop("incorrect precinct")
+  }
+
+  # Extract max and min timestamps
+  v_maxtimestamp <- max(Penna$Timestamp[Penna$Timestamp == as.Date(in_date)])
+  v_mintimestamp <- min(Penna$Timestamp[Penna$Timestamp == as.Date(in_date)])
+
+  # Check if the date is within the valid range
+  if (as.Date(in_date) < v_mintimestamp) {
+    out_winner <- 0
+    stop("incorrect candidate")
+  }
+
+  # Check candidate and select the winner
+  if (in_newname == 'Biden') {
+    out_winner <- Penna$Biden[Penna$Timestamp == v_maxtimestamp & Penna$precinct == param_precinct]
+  } else if (in_newname == 'Trump') {
+    out_winner <- Penna$Trump[Penna$Timestamp == v_maxtimestamp & Penna$precinct == param_precinct]
+  } else {
+    out_winner <- 0
+    stop("incorrect candidate")
+  }
+
+  return(out_winner)
+}
+
+# Sample Data (Assuming Penna is a data frame)
+Penna <- data.frame(
+  Timestamp = as.POSIXct(c('2020-11-06 19:10:53', '2020-11-06 19:10:53')),
+  precinct = c('abcddee', 'Hanover'),
+  Biden = c(1, 2),
+  Trump = c(3, 4)
+)
+
+# Call with wrong precinct
+qty_wrong_precinct <- API1('Biden', '2020-11-06 19:10:53', 'abcddee')
+print(qty_wrong_precinct)
+
+# Call with correct precinct
+qty_correct_precinct <- API1('Biden', '2020-11-06 19:10:53', 'Hanover')
+print(qty_correct_precinct)
+
+# Query the data of the table
+selected_data <- Penna[Penna$Timestamp == '2020-11-06 19:10:53' & Penna$precinct == 'Hanover', ]
+print(selected_data)
+
+# API 2 in R
+API2 <- function(param_date) {
+  # Placeholder for out_precinct
+  out_precinct <- NA
+
+  # Extract max timestamp
+  max_timestamp <- max(as.Date(Penna$Timestamp[Penna$Timestamp == as.Date(param_date)]))
+
+  # Calculate sums for Biden and Trump
+  result <- aggregate(cbind(Biden, Trump) ~ Timestamp, data = Penna[Penna$Timestamp == max_timestamp, ], sum)
+
+  # Extract values
+  v_timestamp <- as.character(result$Timestamp)
+  v_Biden <- sum(result$Biden)
+  v_Trump <- sum(result$Trump)
+
+  # Determine winner
+  if (v_Biden < v_Trump) {
+    out_precinct <- paste("the last timestamp:", v_timestamp, ", Trump‘s votes:", v_Trump)
+  } else {
+    out_precinct <- paste("the last timestamp:", v_timestamp, ", Biden‘s votes:", v_Biden)
+  }
+
+  return(out_precinct)
+}
+
+# Sample Call for API 2
+out_precinct_API2 <- API2('2020-11-06')
+print(out_precinct_API2)
+
+# API 3 in R
+API3 <- function(param_precinct) {
+  # Placeholder for out_precinct
+  out_precinct <- NA
+
+  if (param_precinct == 'Biden') {
+    result <- aggregate(totalvotes ~ precinct, data = Penna[Biden > Trump, ], max)
+    result <- result[order(result$totalvotes, decreasing = TRUE), ][1:10, ]
+    out_precinct <- result
+  } else if (param_precinct == 'Trump') {
+    result <- aggregate(totalvotes ~ precinct, data = Penna[Biden < Trump, ], max)
+    result <- result[order(result$totalvotes, decreasing = TRUE), ][1:10, ]
+    out_precinct <- result
+  } else {
+    out_precinct <- 'incorrect candidate'
+    stop('incorrect candidate')
+  }
+
+  return(out_precinct)
+}
+
+# Sample Calls for API 3
+out_precinct_API3_Biden <- API3('Biden')
+print(out_precinct_API3_Biden)
+
+out_precinct_API3_Trump <- API3('Trump')
+print(out_precinct_API3_Trump)
+
+# API 4 in R
+API4 <- function(param_precinct) {
+  # Placeholder for out_winner
+  out_winner <- NA
+
+  # Check if precinct is correct
+  var_check1 <- sum(Penna$precinct == param_precinct)
+  if (var_check1 <= 0) {
+    out_winner <- 0
+    stop("incorrect precinct")
+  }
+
+  # Calculate sums and percentages
+  result <- aggregate(cbind(Biden, Trump, totalvotes) ~ precinct, data = Penna[Penna$precinct == param_precinct, ], sum)
+  result$Bidenpercent <- round(result$Biden / result$totalvotes * 100, 2)
+  result$Trumppercent <- round(result$Trump / result$totalvotes * 100, 2)
+
+  # Determine winner
+  if (result$Biden < result$Trump) {
+    out_winner <- paste(result$precinct, 'winner: Trump, percentage of total:', result$Trumppercent, '%')
+  } else {
+    out_winner <- paste(result$precinct, 'winner: Biden, percentage of total:', result$Bidenpercent, '%')
+  }
+
+  return(out_winner)
+}
+
+# Sample Calls for API 4
+out_winner_wrong_precinct <- API4('Lower')
+print(out_winner_wrong_precinct)
+
+out_winner_correct_precinct1 <- API4('Lower Providence 1-1')
+print(out_winner_correct_precinct1)
+
+out_winner_correct_precinct2 <- API4('Lower Providence 2-4')
+print(out_winner_correct_precinct2)
+
+# API 5 in R
+API5 <- function(param_precinct) {
+  # Placeholder for out_winner2
+  out_winner2 <- NA
+
+  # Check if precinct is correct
+  var_check1 <- sum(grepl(param_precinct, Penna$precinct))
+  if (var_check1 <= 0) {
+    out_winner2 <- 0
+    stop("incorrect precinct")
+  }
+
+  # Calculate sums for Biden and Trump
+  result <- aggregate(cbind(Biden, Trump) ~ precinct, data = Penna[grepl(param_precinct, Penna$precinct), ], sum)
+  v_Biden <- sum(result$Biden)
+  v_Trump <- sum(result$Trump)
+
+  # Determine winner
+  if (v_Biden < v_Trump) {
+    out_winner2 <- paste(param_precinct, 'winner: Trump, how many votes:', v_Trump)
+  } else {
+    out_winner2 <- paste(param_precinct, 'winner: Biden, how many votes:', v_Biden)
+  }
+
+  return(out_winner2)
+}
+
+# Sample Calls for API 5
+out_winner_wrong_precinct <- API5('abccddeeee')
+print(out_winner_wrong_precinct)
+
+out_winner_correct_precinct <- API5('Township')
+print(out_winner_correct_precinct)
+
+
+
+
+# Create newPenna table
+newPenna <- data.frame(
+  precinct = character(),
+  Timestamp = as.POSIXct(character()),
+  newvotes = integer(),
+  new_Trump = integer(),
+  new_Biden = integer(),
+  stringsAsFactors = FALSE
+)
+
+# newPenna procedure in R
+newPenna <- function(in_newPenna, in_date) {
+  # Check if precinct is correct
+  var_check1 <- sum(Penna$precinct == in_newPenna)
+  if (var_check1 <= 0) {
+    stop("incorrect precinct")
+  }
+
+  # Initialize variables
+  var_date <- var_totalvotes <- var_Trump <- var_Biden <- old_totalvotes <- old_Trump <- old_Biden <- NA
+  out_totalvotes <- out_new_Trump <- out_new_Biden <- NA
+
+  # Fetch data using cursor
+  for (row in Penna[Penna$timestamp < in_date & Penna$precinct == in_newPenna &
+                     as.Date(Penna$timestamp) == as.Date(in_date),]) {
+    var_date <- row$timestamp
+    old_totalvotes <- row$totalvotes
+    old_Trump <- row$Trump
+    old_Biden <- row$Biden
+  }
+
+  # Get values for the specified timestamp and precinct
+  selected_row <- Penna[Penna$timestamp == in_date & Penna$precinct == in_newPenna &
+                         as.Date(Penna$timestamp) == as.Date(in_date), ]
+  var_totalvotes <- selected_row$totalvotes
+  var_Trump <- selected_row$Trump
+  var_Biden <- selected_row$Biden
+
+  # Calculate differences
+  out_totalvotes <- var_totalvotes - old_totalvotes
+  out_new_Trump <- var_Trump - old_Trump
+  out_new_Biden <- var_Biden - old_Biden
+
+  # Insert into newPenna table
+  newPenna <<- rbind(newPenna, data.frame(
+    precinct = in_newPenna,
+    Timestamp = in_date,
+    newvotes = out_totalvotes,
+    new_Trump = out_new_Trump,
+    new_Biden = out_new_Biden
+  ))
+}
+
+# Sample Calls for newPenna procedure
+newPenna('abcdeeff', '2020-11-06 19:10:53')
+print(newPenna)
+
+newPenna('Hanover', '2020-11-06 19:10:53')
+print(newPenna)
+
+# Switch procedure in R
+Switch <- function() {
+  # Get data for the switch
+  switch_data <- Penna[Penna$timestamp < max(Penna$timestamp) & 
+                       as.Date(Penna$timestamp) >= (max(Penna$timestamp) - 24 * 60 * 60) &
+                       Penna$Biden < Penna$Trump,]
+
+  # Create the result dataframe
+  result <- data.frame(
+    precinct = switch_data$precinct,
+    Timestamp = switch_data$timestamp,
+    fromCandidate = 'Trump',
+    toCandidate = 'Biden'
+  )
+
+  return(result)
+}
+
+# Sample Calls for Switch procedure
+switch_result <- Switch()
+print(switch_result)
+
+
+
+
+
+
+
+
+
+
+
+
+Part 3:
+# newP3CHECK procedure in R
+newP3CHECK <- function() {
+  # Define local variables
+  var_check1 <- var_check2 <- var_check3 <- var_check4 <- var_check5 <- 0
+  is_check <- TRUE
+
+  # Check constraint 1
+  if (sum(Penna$totalvotes < (Penna$Trump + Penna$Biden)) > 0) {
+    is_check <- FALSE
+    stop("FALSE (constraint is not satisfied)")
+  }
+
+  # Check constraint 2
+  if (sum(Penna$timestamp > '2020-11-11 23:59:59') > 0) {
+    is_check <- FALSE
+    stop("FALSE (constraint is not satisfied)")
+  }
+
+  # Check constraint 3
+  if (sum(as.Date(Penna$timestamp) > '2020-11-11') > 0) {
+    is_check <- FALSE
+    stop("FALSE (constraint is not satisfied)")
+  }
+
+  # Check constraint 4
+  if (sum(as.Date(Penna$timestamp) < '2020-10-03') > 0) {
+    is_check <- FALSE
+    stop("FALSE (constraint is not satisfied)")
+  }
+
+  # Check constraint 5
+  result <- merge(
+    subset(Penna, as.Date(Penna$timestamp) == '2020-11-05'),
+    subset(Penna, as.Date(Penna$timestamp) == '2020-11-05'),
+    by = 'precinct'
+  )
+  if (sum(result$maxtotal < result$mintotal) > 0) {
+    is_check <- FALSE
+    stop("FALSE (constraint is not satisfied)")
+  }
+
+  return(is_check)
+}
+
+# Sample Call for newP3CHECK procedure
+is_check <- newP3CHECK()
+print(is_check)
+
+
+
+
+
+Part 4:
+
+# Define data frames for each table
+Updated_Tuples <- data.frame(
+  ID = integer(),
+  Timestamp = as.POSIXct(character()),
+  state = character(),
+  locality = character(),
+  precinct = character(),
+  geo = character(),
+  totalvotes = integer(),
+  Biden = integer(),
+  Trump = integer(),
+  filestamp = character(),
+  stringsAsFactors = FALSE
+)
+
+Inserted_Tuples <- data.frame(
+  ID = integer(),
+  Timestamp = as.POSIXct(character()),
+  state = character(),
+  locality = character(),
+  precinct = character(),
+  geo = character(),
+  totalvotes = integer(),
+  Biden = integer(),
+  Trump = integer(),
+  filestamp = character(),
+  stringsAsFactors = FALSE
+)
+
+Deleted_Tuples <- data.frame(
+  ID = integer(),
+  Timestamp = as.POSIXct(character()),
+  state = character(),
+  locality = character(),
+  precinct = character(),
+  geo = character(),
+  totalvotes = integer(),
+  Biden = integer(),
+  Trump = integer(),
+  filestamp = character(),
+  stringsAsFactors = FALSE
+)
+
+BAK_Tuples <- data.frame(
+  ID = integer(),
+  Timestamp = as.POSIXct(character()),
+  state = character(),
+  locality = character(),
+  precinct = character(),
+  geo = character(),
+  totalvotes = integer(),
+  Biden = integer(),
+  Trump = integer(),
+  filestamp = character(),
+  stringsAsFactors = FALSE
+)
+
+# Insert Trigger in R
+insert_trigger <- function(new_data) {
+  Inserted_Tuples <<- rbind(Inserted_Tuples, new_data)
+}
+
+# Update Trigger in R
+update_trigger <- function(old_data) {
+  Updated_Tuples <<- rbind(Updated_Tuples, old_data)
+}
+
+# Delete Trigger in R
+delete_trigger <- function(old_data) {
+  Deleted_Tuples <<- rbind(Deleted_Tuples, old_data)
+}
+
+# MoveVotes procedure in R
+MoveVotes <- function(param_precinct, in_date, in_newname, Number_of_Moved_Votes) {
+  # Declare local variables
+  var_check1 <- var_check2 <- var_check3 <- 0
+  v_Biden <- v_Trump <- 0
+  out_return <- ""
+
+  # Check timestamp
+  if (sum(Penna$timestamp == in_date) <= 0) {
+    out_return <- "Unknown Timestamp"
+    stop(out_return)
+  }
+
+  # Check precinct
+  if (sum(Penna$precinct == param_precinct) <= 0) {
+    out_return <- "wrong precinct name"
+    stop(out_return)
+  }
+
+  # Check votes
+  if (Number_of_Moved_Votes <= 0) {
+    out_return <- "Not enough votes"
+    stop(out_return)
+  }
+
+  # Get candidate votes
+  if (in_newname == 'Biden') {
+    v_Biden <- Penna$Biden[Penna$timestamp == in_date & Penna$precinct == param_precinct]
+    if (v_Biden < Number_of_Moved_Votes) {
+      out_return <- "Not enough votes"
+      stop(out_return)
+    }
+  } else if (in_newname == 'Trump') {
+    v_Trump <- Penna$Trump[Penna$timestamp == in_date & Penna$precinct == param_precinct]
+    if (v_Trump < Number_of_Moved_Votes) {
+      out_return <- "Not enough votes"
+      stop(out_return)
+    }
+  } else {
+    out_return <- "wrong candidate name"
+    stop(out_return)
+  }
+
+  # Update Data
+  if (in_newname == 'Biden') {
+    Penna$Trump[Penna$timestamp >= in_date & Penna$precinct == param_precinct] <-
+      Penna$Trump[Penna$timestamp >= in_date & Penna$precinct == param_precinct] + Number_of_Moved_Votes
+    Penna$Biden[Penna$timestamp >= in_date & Penna$precinct == param_precinct] <-
+      Penna$Biden[Penna$timestamp >= in_date & Penna$precinct == param_precinct] - Number_of_Moved_Votes
+    out_return <- "Biden update true"
+  } else if (in_newname == 'Trump') {
+    Penna$Trump[Penna$timestamp >= in_date & Penna$precinct == param_precinct] <-
+      Penna$Trump[Penna$timestamp >= in_date & Penna$precinct == param_precinct] - Number_of_Moved_Votes
+    Penna$Biden[Penna$timestamp >= in_date & Penna$precinct == param_precinct] <-
+      Penna$Biden[Penna$timestamp >= in_date & Penna$precinct == param_precinct] + Number_of_Moved_Votes
+    out_return <- "Trump update true”
