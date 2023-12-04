@@ -1,0 +1,1419 @@
+{\rtf1\ansi\ansicpg936\cocoartf2580
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Roman;\f1\fnil\fcharset134 STSongti-SC-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\qj\partightenfactor0
+
+\f0\fs28 \cf2 \expnd0\expndtw0\kerning0
+# Function to mimic API1 in R
+\f1 \
+
+\f0 API1 <- function(in_newname, in_date, param_precinct) \{
+\f1 \
+
+\f0 \'a0 # Placeholder for out_winner
+\f1 \
+
+\f0 \'a0 out_winner <- NA
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check if timestamp is correct
+\f1 \
+
+\f0 \'a0 var_check2 <- sum(Penna$timestamp == in_date)
+\f1 \
+
+\f0 \'a0 if (var_check2 <= 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_winner <- 0
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop("incorrect timestamp")
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check if precinct is correct
+\f1 \
+
+\f0 \'a0 var_check1 <- sum(Penna$precinct == param_precinct)
+\f1 \
+
+\f0 \'a0 if (var_check1 <= 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_winner <- 0
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop("incorrect precinct")
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Extract max and min timestamps
+\f1 \
+
+\f0 \'a0 v_maxtimestamp <- max(Penna$Timestamp[Penna$Timestamp == as.Date(in_date)])
+\f1 \
+
+\f0 \'a0 v_mintimestamp <- min(Penna$Timestamp[Penna$Timestamp == as.Date(in_date)])
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check if the date is within the valid range
+\f1 \
+
+\f0 \'a0 if (as.Date(in_date) < v_mintimestamp) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_winner <- 0
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop("incorrect candidate")
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check candidate and select the winner
+\f1 \
+
+\f0 \'a0 if (in_newname == 'Biden') \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_winner <- Penna$Biden[Penna$Timestamp == v_maxtimestamp & Penna$precinct == param_precinct]
+\f1 \
+
+\f0 \'a0 \} else if (in_newname == 'Trump') \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_winner <- Penna$Trump[Penna$Timestamp == v_maxtimestamp & Penna$precinct == param_precinct]
+\f1 \
+
+\f0 \'a0 \} else \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_winner <- 0
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop("incorrect candidate")
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 return(out_winner)
+\f1 \
+
+\f0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Sample Data (Assuming Penna is a data frame)
+\f1 \
+
+\f0 Penna <- data.frame(
+\f1 \
+
+\f0 \'a0 Timestamp = as.POSIXct(c('2020-11-06 19:10:53', '2020-11-06 19:10:53')),
+\f1 \
+
+\f0 \'a0 precinct = c('abcddee', 'Hanover'),
+\f1 \
+
+\f0 \'a0 Biden = c(1, 2),
+\f1 \
+
+\f0 \'a0 Trump = c(3, 4)
+\f1 \
+
+\f0 )
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Call with wrong precinct
+\f1 \
+
+\f0 qty_wrong_precinct <- API1('Biden', '2020-11-06 19:10:53', 'abcddee')
+\f1 \
+
+\f0 print(qty_wrong_precinct)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Call with correct precinct
+\f1 \
+
+\f0 qty_correct_precinct <- API1('Biden', '2020-11-06 19:10:53', 'Hanover')
+\f1 \
+
+\f0 print(qty_correct_precinct)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Query the data of the table
+\f1 \
+
+\f0 selected_data <- Penna[Penna$Timestamp == '2020-11-06 19:10:53' & Penna$precinct == 'Hanover', ]
+\f1 \
+
+\f0 print(selected_data)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # API 2 in R
+\f1 \
+
+\f0 API2 <- function(param_date) \{
+\f1 \
+
+\f0 \'a0 # Placeholder for out_precinct
+\f1 \
+
+\f0 \'a0 out_precinct <- NA
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Extract max timestamp
+\f1 \
+
+\f0 \'a0 max_timestamp <- max(as.Date(Penna$Timestamp[Penna$Timestamp == as.Date(param_date)]))
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Calculate sums for Biden and Trump
+\f1 \
+
+\f0 \'a0 result <- aggregate(cbind(Biden, Trump) ~ Timestamp, data = Penna[Penna$Timestamp == max_timestamp, ], sum)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Extract values
+\f1 \
+
+\f0 \'a0 v_timestamp <- as.character(result$Timestamp)
+\f1 \
+
+\f0 \'a0 v_Biden <- sum(result$Biden)
+\f1 \
+
+\f0 \'a0 v_Trump <- sum(result$Trump)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Determine winner
+\f1 \
+
+\f0 \'a0 if (v_Biden < v_Trump) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_precinct <- paste("the last timestamp:", v_timestamp, ", Trump\'91s votes:", v_Trump)
+\f1 \
+
+\f0 \'a0 \} else \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_precinct <- paste("the last timestamp:", v_timestamp, ", Biden\'91s votes:", v_Biden)
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 return(out_precinct)
+\f1 \
+
+\f0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Sample Call for API 2
+\f1 \
+
+\f0 out_precinct_API2 <- API2('2020-11-06')
+\f1 \
+
+\f0 print(out_precinct_API2)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # API 3 in R
+\f1 \
+
+\f0 API3 <- function(param_precinct) \{
+\f1 \
+
+\f0 \'a0 # Placeholder for out_precinct
+\f1 \
+
+\f0 \'a0 out_precinct <- NA
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 if (param_precinct == 'Biden') \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 result <- aggregate(totalvotes ~ precinct, data = Penna[Biden > Trump, ], max)
+\f1 \
+
+\f0 \'a0\'a0\'a0 result <- result[order(result$totalvotes, decreasing = TRUE), ][1:10, ]
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_precinct <- result
+\f1 \
+
+\f0 \'a0 \} else if (param_precinct == 'Trump') \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 result <- aggregate(totalvotes ~ precinct, data = Penna[Biden < Trump, ], max)
+\f1 \
+
+\f0 \'a0\'a0\'a0 result <- result[order(result$totalvotes, decreasing = TRUE), ][1:10, ]
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_precinct <- result
+\f1 \
+
+\f0 \'a0 \} else \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_precinct <- 'incorrect candidate'
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop('incorrect candidate')
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 return(out_precinct)
+\f1 \
+
+\f0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Sample Calls for API 3
+\f1 \
+
+\f0 out_precinct_API3_Biden <- API3('Biden')
+\f1 \
+
+\f0 print(out_precinct_API3_Biden)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 out_precinct_API3_Trump <- API3('Trump')
+\f1 \
+
+\f0 print(out_precinct_API3_Trump)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # API 4 in R
+\f1 \
+
+\f0 API4 <- function(param_precinct) \{
+\f1 \
+
+\f0 \'a0 # Placeholder for out_winner
+\f1 \
+
+\f0 \'a0 out_winner <- NA
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check if precinct is correct
+\f1 \
+
+\f0 \'a0 var_check1 <- sum(Penna$precinct == param_precinct)
+\f1 \
+
+\f0 \'a0 if (var_check1 <= 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_winner <- 0
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop("incorrect precinct")
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Calculate sums and percentages
+\f1 \
+
+\f0 \'a0 result <- aggregate(cbind(Biden, Trump, totalvotes) ~ precinct, data = Penna[Penna$precinct == param_precinct, ], sum)
+\f1 \
+
+\f0 \'a0 result$Bidenpercent <- round(result$Biden / result$totalvotes * 100, 2)
+\f1 \
+
+\f0 \'a0 result$Trumppercent <- round(result$Trump / result$totalvotes * 100, 2)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Determine winner
+\f1 \
+
+\f0 \'a0 if (result$Biden < result$Trump) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_winner <- paste(result$precinct, 'winner: Trump, percentage of total:', result$Trumppercent, '%')
+\f1 \
+
+\f0 \'a0 \} else \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_winner <- paste(result$precinct, 'winner: Biden, percentage of total:', result$Bidenpercent, '%')
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 return(out_winner)
+\f1 \
+
+\f0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Sample Calls for API 4
+\f1 \
+
+\f0 out_winner_wrong_precinct <- API4('Lower')
+\f1 \
+
+\f0 print(out_winner_wrong_precinct)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 out_winner_correct_precinct1 <- API4('Lower Providence 1-1')
+\f1 \
+
+\f0 print(out_winner_correct_precinct1)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 out_winner_correct_precinct2 <- API4('Lower Providence 2-4')
+\f1 \
+
+\f0 print(out_winner_correct_precinct2)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # API 5 in R
+\f1 \
+
+\f0 API5 <- function(param_precinct) \{
+\f1 \
+
+\f0 \'a0 # Placeholder for out_winner2
+\f1 \
+
+\f0 \'a0 out_winner2 <- NA
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check if precinct is correct
+\f1 \
+
+\f0 \'a0 var_check1 <- sum(grepl(param_precinct, Penna$precinct))
+\f1 \
+
+\f0 \'a0 if (var_check1 <= 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_winner2 <- 0
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop("incorrect precinct")
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Calculate sums for Biden and Trump
+\f1 \
+
+\f0 \'a0 result <- aggregate(cbind(Biden, Trump) ~ precinct, data = Penna[grepl(param_precinct, Penna$precinct), ], sum)
+\f1 \
+
+\f0 \'a0 v_Biden <- sum(result$Biden)
+\f1 \
+
+\f0 \'a0 v_Trump <- sum(result$Trump)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Determine winner
+\f1 \
+
+\f0 \'a0 if (v_Biden < v_Trump) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_winner2 <- paste(param_precinct, 'winner: Trump, how many votes:', v_Trump)
+\f1 \
+
+\f0 \'a0 \} else \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_winner2 <- paste(param_precinct, 'winner: Biden, how many votes:', v_Biden)
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 return(out_winner2)
+\f1 \
+
+\f0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Sample Calls for API 5
+\f1 \
+
+\f0 out_winner_wrong_precinct <- API5('abccddeeee')
+\f1 \
+
+\f0 print(out_winner_wrong_precinct)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 out_winner_correct_precinct <- API5('Township')
+\f1 \
+
+\f0 print(out_winner_correct_precinct)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Create newPenna table
+\f1 \
+
+\f0 newPenna <- data.frame(
+\f1 \
+
+\f0 \'a0 precinct = character(),
+\f1 \
+
+\f0 \'a0 Timestamp = as.POSIXct(character()),
+\f1 \
+
+\f0 \'a0 newvotes = integer(),
+\f1 \
+
+\f0 \'a0 new_Trump = integer(),
+\f1 \
+
+\f0 \'a0 new_Biden = integer(),
+\f1 \
+
+\f0 \'a0 stringsAsFactors = FALSE
+\f1 \
+
+\f0 )
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # newPenna procedure in R
+\f1 \
+
+\f0 newPenna <- function(in_newPenna, in_date) \{
+\f1 \
+
+\f0 \'a0 # Check if precinct is correct
+\f1 \
+
+\f0 \'a0 var_check1 <- sum(Penna$precinct == in_newPenna)
+\f1 \
+
+\f0 \'a0 if (var_check1 <= 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop("incorrect precinct")
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Initialize variables
+\f1 \
+
+\f0 \'a0 var_date <- var_totalvotes <- var_Trump <- var_Biden <- old_totalvotes <- old_Trump <- old_Biden <- NA
+\f1 \
+
+\f0 \'a0 out_totalvotes <- out_new_Trump <- out_new_Biden <- NA
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Fetch data using cursor
+\f1 \
+
+\f0 \'a0 for (row in Penna[Penna$timestamp < in_date & Penna$precinct == in_newPenna &
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0 as.Date(Penna$timestamp) == as.Date(in_date),]) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 var_date <- row$timestamp
+\f1 \
+
+\f0 \'a0\'a0\'a0 old_totalvotes <- row$totalvotes
+\f1 \
+
+\f0 \'a0\'a0\'a0 old_Trump <- row$Trump
+\f1 \
+
+\f0 \'a0\'a0\'a0 old_Biden <- row$Biden
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Get values for the specified timestamp and precinct
+\f1 \
+
+\f0 \'a0 selected_row <- Penna[Penna$timestamp == in_date & Penna$precinct == in_newPenna &
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0 as.Date(Penna$timestamp) == as.Date(in_date), ]
+\f1 \
+
+\f0 \'a0 var_totalvotes <- selected_row$totalvotes
+\f1 \
+
+\f0 \'a0 var_Trump <- selected_row$Trump
+\f1 \
+
+\f0 \'a0 var_Biden <- selected_row$Biden
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Calculate differences
+\f1 \
+
+\f0 \'a0 out_totalvotes <- var_totalvotes - old_totalvotes
+\f1 \
+
+\f0 \'a0 out_new_Trump <- var_Trump - old_Trump
+\f1 \
+
+\f0 \'a0 out_new_Biden <- var_Biden - old_Biden
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Insert into newPenna table
+\f1 \
+
+\f0 \'a0 newPenna <<- rbind(newPenna, data.frame(
+\f1 \
+
+\f0 \'a0\'a0\'a0 precinct = in_newPenna,
+\f1 \
+
+\f0 \'a0\'a0\'a0 Timestamp = in_date,
+\f1 \
+
+\f0 \'a0\'a0\'a0 newvotes = out_totalvotes,
+\f1 \
+
+\f0 \'a0\'a0\'a0 new_Trump = out_new_Trump,
+\f1 \
+
+\f0 \'a0\'a0\'a0 new_Biden = out_new_Biden
+\f1 \
+
+\f0 \'a0 ))
+\f1 \
+
+\f0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Sample Calls for newPenna procedure
+\f1 \
+
+\f0 newPenna('abcdeeff', '2020-11-06 19:10:53')
+\f1 \
+
+\f0 print(newPenna)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 newPenna('Hanover', '2020-11-06 19:10:53')
+\f1 \
+
+\f0 print(newPenna)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Switch procedure in R
+\f1 \
+
+\f0 Switch <- function() \{
+\f1 \
+
+\f0 \'a0 # Get data for the switch
+\f1 \
+
+\f0 \'a0 switch_data <- Penna[Penna$timestamp < max(Penna$timestamp) & 
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0 as.Date(Penna$timestamp) >= (max(Penna$timestamp) - 24 * 60 * 60) &
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0 Penna$Biden < Penna$Trump,]
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Create the result dataframe
+\f1 \
+
+\f0 \'a0 result <- data.frame(
+\f1 \
+
+\f0 \'a0\'a0\'a0 precinct = switch_data$precinct,
+\f1 \
+
+\f0 \'a0\'a0\'a0 Timestamp = switch_data$timestamp,
+\f1 \
+
+\f0 \'a0\'a0\'a0 fromCandidate = 'Trump',
+\f1 \
+
+\f0 \'a0\'a0\'a0 toCandidate = 'Biden'
+\f1 \
+
+\f0 \'a0 )
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 return(result)
+\f1 \
+
+\f0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Sample Calls for Switch procedure
+\f1 \
+
+\f0 switch_result <- Switch()
+\f1 \
+
+\f0 print(switch_result)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 Part 3:
+\f1 \
+
+\f0 # newP3CHECK procedure in R
+\f1 \
+
+\f0 newP3CHECK <- function() \{
+\f1 \
+
+\f0 \'a0 # Define local variables
+\f1 \
+
+\f0 \'a0 var_check1 <- var_check2 <- var_check3 <- var_check4 <- var_check5 <- 0
+\f1 \
+
+\f0 \'a0 is_check <- TRUE
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check constraint 1
+\f1 \
+
+\f0 \'a0 if (sum(Penna$totalvotes < (Penna$Trump + Penna$Biden)) > 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 is_check <- FALSE
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop("FALSE (constraint is not satisfied)")
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check constraint 2
+\f1 \
+
+\f0 \'a0 if (sum(Penna$timestamp > '2020-11-11 23:59:59') > 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 is_check <- FALSE
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop("FALSE (constraint is not satisfied)")
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check constraint 3
+\f1 \
+
+\f0 \'a0 if (sum(as.Date(Penna$timestamp) > '2020-11-11') > 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 is_check <- FALSE
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop("FALSE (constraint is not satisfied)")
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check constraint 4
+\f1 \
+
+\f0 \'a0 if (sum(as.Date(Penna$timestamp) < '2020-10-03') > 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 is_check <- FALSE
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop("FALSE (constraint is not satisfied)")
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check constraint 5
+\f1 \
+
+\f0 \'a0 result <- merge(
+\f1 \
+
+\f0 \'a0\'a0\'a0 subset(Penna, as.Date(Penna$timestamp) == '2020-11-05'),
+\f1 \
+
+\f0 \'a0\'a0\'a0 subset(Penna, as.Date(Penna$timestamp) == '2020-11-05'),
+\f1 \
+
+\f0 \'a0\'a0\'a0 by = 'precinct'
+\f1 \
+
+\f0 \'a0 )
+\f1 \
+
+\f0 \'a0 if (sum(result$maxtotal < result$mintotal) > 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 is_check <- FALSE
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop("FALSE (constraint is not satisfied)")
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 return(is_check)
+\f1 \
+
+\f0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Sample Call for newP3CHECK procedure
+\f1 \
+
+\f0 is_check <- newP3CHECK()
+\f1 \
+
+\f0 print(is_check)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 Part 4:
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Define data frames for each table
+\f1 \
+
+\f0 Updated_Tuples <- data.frame(
+\f1 \
+
+\f0 \'a0 ID = integer(),
+\f1 \
+
+\f0 \'a0 Timestamp = as.POSIXct(character()),
+\f1 \
+
+\f0 \'a0 state = character(),
+\f1 \
+
+\f0 \'a0 locality = character(),
+\f1 \
+
+\f0 \'a0 precinct = character(),
+\f1 \
+
+\f0 \'a0 geo = character(),
+\f1 \
+
+\f0 \'a0 totalvotes = integer(),
+\f1 \
+
+\f0 \'a0 Biden = integer(),
+\f1 \
+
+\f0 \'a0 Trump = integer(),
+\f1 \
+
+\f0 \'a0 filestamp = character(),
+\f1 \
+
+\f0 \'a0 stringsAsFactors = FALSE
+\f1 \
+
+\f0 )
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 Inserted_Tuples <- data.frame(
+\f1 \
+
+\f0 \'a0 ID = integer(),
+\f1 \
+
+\f0 \'a0 Timestamp = as.POSIXct(character()),
+\f1 \
+
+\f0 \'a0 state = character(),
+\f1 \
+
+\f0 \'a0 locality = character(),
+\f1 \
+
+\f0 \'a0 precinct = character(),
+\f1 \
+
+\f0 \'a0 geo = character(),
+\f1 \
+
+\f0 \'a0 totalvotes = integer(),
+\f1 \
+
+\f0 \'a0 Biden = integer(),
+\f1 \
+
+\f0 \'a0 Trump = integer(),
+\f1 \
+
+\f0 \'a0 filestamp = character(),
+\f1 \
+
+\f0 \'a0 stringsAsFactors = FALSE
+\f1 \
+
+\f0 )
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 Deleted_Tuples <- data.frame(
+\f1 \
+
+\f0 \'a0 ID = integer(),
+\f1 \
+
+\f0 \'a0 Timestamp = as.POSIXct(character()),
+\f1 \
+
+\f0 \'a0 state = character(),
+\f1 \
+
+\f0 \'a0 locality = character(),
+\f1 \
+
+\f0 \'a0 precinct = character(),
+\f1 \
+
+\f0 \'a0 geo = character(),
+\f1 \
+
+\f0 \'a0 totalvotes = integer(),
+\f1 \
+
+\f0 \'a0 Biden = integer(),
+\f1 \
+
+\f0 \'a0 Trump = integer(),
+\f1 \
+
+\f0 \'a0 filestamp = character(),
+\f1 \
+
+\f0 \'a0 stringsAsFactors = FALSE
+\f1 \
+
+\f0 )
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 BAK_Tuples <- data.frame(
+\f1 \
+
+\f0 \'a0 ID = integer(),
+\f1 \
+
+\f0 \'a0 Timestamp = as.POSIXct(character()),
+\f1 \
+
+\f0 \'a0 state = character(),
+\f1 \
+
+\f0 \'a0 locality = character(),
+\f1 \
+
+\f0 \'a0\'a0precinct = character(),
+\f1 \
+
+\f0 \'a0 geo = character(),
+\f1 \
+
+\f0 \'a0 totalvotes = integer(),
+\f1 \
+
+\f0 \'a0 Biden = integer(),
+\f1 \
+
+\f0 \'a0 Trump = integer(),
+\f1 \
+
+\f0 \'a0 filestamp = character(),
+\f1 \
+
+\f0 \'a0 stringsAsFactors = FALSE
+\f1 \
+
+\f0 )
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Insert Trigger in R
+\f1 \
+
+\f0 insert_trigger <- function(new_data) \{
+\f1 \
+
+\f0 \'a0 Inserted_Tuples <<- rbind(Inserted_Tuples, new_data)
+\f1 \
+
+\f0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Update Trigger in R
+\f1 \
+
+\f0 update_trigger <- function(old_data) \{
+\f1 \
+
+\f0 \'a0 Updated_Tuples <<- rbind(Updated_Tuples, old_data)
+\f1 \
+
+\f0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # Delete Trigger in R
+\f1 \
+
+\f0 delete_trigger <- function(old_data) \{
+\f1 \
+
+\f0 \'a0 Deleted_Tuples <<- rbind(Deleted_Tuples, old_data)
+\f1 \
+
+\f0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # MoveVotes procedure in R
+\f1 \
+
+\f0 MoveVotes <- function(param_precinct, in_date, in_newname, Number_of_Moved_Votes) \{
+\f1 \
+
+\f0 \'a0 # Declare local variables
+\f1 \
+
+\f0 \'a0 var_check1 <- var_check2 <- var_check3 <- 0
+\f1 \
+
+\f0 \'a0 v_Biden <- v_Trump <- 0
+\f1 \
+
+\f0 \'a0 out_return <- ""
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check timestamp
+\f1 \
+
+\f0 \'a0 if (sum(Penna$timestamp == in_date) <= 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_return <- "Unknown Timestamp"
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop(out_return)
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check precinct
+\f1 \
+
+\f0 \'a0 if (sum(Penna$precinct == param_precinct) <= 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_return <- "wrong precinct name"
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop(out_return)
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Check votes
+\f1 \
+
+\f0 \'a0 if (Number_of_Moved_Votes <= 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_return <- "Not enough votes"
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop(out_return)
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Get candidate votes
+\f1 \
+
+\f0 \'a0 if (in_newname == 'Biden') \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 v_Biden <- Penna$Biden[Penna$timestamp == in_date & Penna$precinct == param_precinct]
+\f1 \
+
+\f0 \'a0\'a0\'a0 if (v_Biden < Number_of_Moved_Votes) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0 out_return <- "Not enough votes"
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0 stop(out_return)
+\f1 \
+
+\f0 \'a0\'a0\'a0 \}
+\f1 \
+
+\f0 \'a0 \} else if (in_newname == 'Trump') \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 v_Trump <- Penna$Trump[Penna$timestamp == in_date & Penna$precinct == param_precinct]
+\f1 \
+
+\f0 \'a0\'a0\'a0 if (v_Trump < Number_of_Moved_Votes) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0 out_return <- "Not enough votes"
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0 stop(out_return)
+\f1 \
+
+\f0 \'a0\'a0\'a0 \}
+\f1 \
+
+\f0 \'a0 \} else \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_return <- "wrong candidate name"
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop(out_return)
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 \'a0 # Update Data
+\f1 \
+
+\f0 \'a0 if (in_newname == 'Biden') \{
+\f1 \
+
+\f0 \'a0\'a0 \'a0Penna$Trump[Penna$timestamp >= in_date & Penna$precinct == param_precinct] <-
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0 Penna$Trump[Penna$timestamp >= in_date & Penna$precinct == param_precinct] + Number_of_Moved_Votes
+\f1 \
+
+\f0 \'a0\'a0\'a0 Penna$Biden[Penna$timestamp >= in_date & Penna$precinct == param_precinct] <-
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0 Penna$Biden[Penna$timestamp >= in_date & Penna$precinct == param_precinct] - Number_of_Moved_Votes
+\f1 \
+
+\f0 \'a0\'a0\'a0 out_return <- "Biden update true"
+\f1 \
+
+\f0 \'a0 \} else if (in_newname == 'Trump') \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 Penna$Trump[Penna$timestamp >= in_date & Penna$precinct == param_precinct] <-
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0 Penna$Trump[Penna$timestamp >= in_date & Penna$precinct == param_precinct] - Number_of_Moved_Votes
+\f1 \
+
+\f0 \'a0\'a0\'a0 Penna$Biden[Penna$timestamp >= in_date & Penna$precinct == param_precinct] <-
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0 Penna$Biden[Penna$timestamp >= in_date & Penna$precinct == param_precinct] + Number_of_Moved_Votes
+\f1 \
+\pard\pardeftab720\partightenfactor0
+
+\f0 \cf2 \'a0\'a0\'a0 out_return <- "Trump update true
+\f1\fs24  }
