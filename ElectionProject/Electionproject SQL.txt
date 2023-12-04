@@ -74,7 +74,7 @@ where timestamp ='2020-11-06 19:10:53' and precinct='Hanover';
 
 
 
-#API 2(date) £º
+#API 2(date) Â£Âº
 delimiter $$
 create procedure API2(in param_date  date,out out_precinct varchar(200))
 begin
@@ -90,9 +90,9 @@ where DATE_FORMAT(timestamp,'%Y-%m-%d') = param_date)
  group by timestamp;
  
 if v_Biden < v_Trump then
-   set out_precinct = concat('the last timestamp:',v_timestamp,' , Trump¡®s votes:', v_Trump);
+   set out_precinct = concat('the last timestamp:',v_timestamp,' , TrumpÂ¡Â®s votes:', v_Trump);
  else
-   set out_precinct = concat('the last timestamp:',v_timestamp,' , Biden¡®s votes:', v_Biden);
+   set out_precinct = concat('the last timestamp:',v_timestamp,' , BidenÂ¡Â®s votes:', v_Biden);
 end if;
 
 end $$
@@ -230,7 +230,7 @@ select @out_winner;
 
 
 
-#PART2£¨30%£©
+#PART2Â£Â¨30%Â£Â©
 #1) newPenna():
 DROP TABLE IF EXISTS `newPenna`;
 CREATE TABLE `newPenna`  (
@@ -320,7 +320,7 @@ select @out_winner;
 select * from newPenna;
 
 
-#£¨2£©Switch():
+#Â£Â¨2Â£Â©Switch():
 delimiter $$
 create procedure Switch()
 begin
@@ -559,7 +559,7 @@ select * from  Deleted_Tuples;
 
 #4.2 MoveVote():
 drop   procedure newP3CHECK;
-For example MoveVotes(Red Hill, 2020-11-06 15:38:36,¡¯Trump¡¯,100) will remove 100 votes from Trump and move it to Biden at 2020-11-06 15:38:36 and all future timestamps after that in the Red Hill precinct. 
+For example MoveVotes(Red Hill, 2020-11-06 15:38:36,Â¡Â¯TrumpÂ¡Â¯,100) will remove 100 votes from Trump and move it to Biden at 2020-11-06 15:38:36 and all future timestamps after that in the Red Hill precinct. 
 
 delimiter $$
 create procedure MoveVotes(in param_precinct varchar(100) ,in in_date datetime,in in_newname varchar(20),in Number_of_Moved_Votes int,out out_return varchar(100) )
@@ -664,7 +664,7 @@ select @returntxt;
 call MoveVotes('Red Hill','2020-11-06 15:38:36','Trump',999999,@returntxt );
 select @returntxt;
 
--- call wrong candidate, need show:  ¡°wrong candidate name
+-- call wrong candidate, need show:  Â¡Â°wrong candidate name
 call MoveVotes('Red Hill','2020-11-06 15:38:36','ABCD',100,@returntxt );
 select @returntxt;
 
