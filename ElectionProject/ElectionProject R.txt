@@ -1,0 +1,65 @@
+install_and_load <- function(package) {
+  if (!requireNamespace(package, quietly = TRUE)) {
+    install.packages(package)
+  }
+  library(package, character.only = TRUE)
+}
+
+packages <- c("DBI", "RMySQL", "ggplot2", "here")
+lapply(packages, install_and_load)
+
+con <- dbConnect(MySQL(), user = 'root', password = '123456', dbname = 'barbeerdrinker', host = 'localhost', port = 3306)
+
+dbSendQuery(con, "
+  create view v_view_Hanover as 
+  select `Timestamp`, Trump, Biden, totalvotes
+  from Penna  
+  where timestamp <= '2020-11-06 19:10:53' and precinct = 'Hanover'
+  and DATE_FORMAT(`Timestamp`, '%Y-%m-%d') = DATE_FORMAT('2020-11-06 19:10:53', '%Y-%m-%d')  
+  order by `Timestamp`
+")
+
+result <- dbSendQuery(con, "select * from v_view_Hanover")
+data.frame <- fetch(result, n = 10)
+print(data.frame)
+
+setwd(here())
+Penna <- read.csv(here("Penna.csv"), colClasses = c(timestamp = "POSIXct"))
+
+# newPenna procedure
+newPenna <- function(in_newPenna, in_date) {
+  data_subset <- Penna %>%
+    filter(precinct == in_newPenna, as.Date(timestamp) == as.Date(in_date))
+  
+  if (nrow(data_subset) == 0) {
+    stop("Incorrect precinct")
+  }
+  
+  new_row <- data.frame(
+    precinct = in_newPenna,
+    Timestamp = in_date,
+    newvotes = data_subset$totalvotes - data_subset$old_totalvotes,
+    new_Trump = data_subset$Trump - data_subset$old_Trump,
+    new_Biden = data_subset$Biden - data_subset$old_Biden
+  )
+  newPenna <<- rbind(newPenna, new_row)
+}  
+
+newPenna('Hanover', '2020-11-06 19:10:53')
+print(newPenna())
+
+switch_result <- Penna %>%
+  filter(timestamp < max(timestamp) & 
+           as.Date(timestamp) >= (max(timestamp) - 24 * 60 * 60) &
+           Biden < Trump) %>%
+  select(precinct, Timestamp = timestamp, fromCandidate = 'Trump', toCandidate = 'Biden')
+
+print(switch_result)
+
+ggplot(Penna, aes(x = as.Date(timestamp), y = totalvotes)) +
+  geom_line() +
+  labs(title = "Total Votes Over Time",
+       x = "Date",
+       y = "Total Votes")
+
+head(Penna)
