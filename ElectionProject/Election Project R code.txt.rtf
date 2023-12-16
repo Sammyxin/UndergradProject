@@ -1,0 +1,204 @@
+{\rtf1\ansi\ansicpg936\cocoartf2580
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\froman\fcharset0 Times-Roman;\f1\fnil\fcharset134 STSongti-SC-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\qj\partightenfactor0
+
+\f0\fs28 \cf2 \expnd0\expndtw0\kerning0
+install_and_load <- function(package) \{
+\f1 \
+
+\f0 \'a0 if (!requireNamespace(package, quietly = TRUE)) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 install.packages(package)
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0 library(package, character.only = TRUE)
+\f1 \
+
+\f0 \}
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 packages <- c("DBI", "RMySQL", "ggplot2", "here")
+\f1 \
+
+\f0 lapply(packages, install_and_load)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 con <- dbConnect(MySQL(), user = 'root', password = '123456', dbname = 'barbeerdrinker', host = 'localhost', port = 3306)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 dbSendQuery(con, "
+\f1 \
+
+\f0 \'a0 create view v_view_Hanover as 
+\f1 \
+
+\f0 \'a0 select `Timestamp`, Trump, Biden, totalvotes
+\f1 \
+
+\f0 \'a0 from Penna\'a0 
+\f1 \
+
+\f0 \'a0 where timestamp <= '2020-11-06 19:10:53' and precinct = 'Hanover'
+\f1 \
+
+\f0 \'a0 and DATE_FORMAT(`Timestamp`, '%Y-%m-%d') = DATE_FORMAT('2020-11-06 19:10:53', '%Y-%m-%d')\'a0 
+\f1 \
+
+\f0 \'a0 order by `Timestamp`
+\f1 \
+
+\f0 ")
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 result <- dbSendQuery(con, "select * from v_view_Hanover")
+\f1 \
+
+\f0 data.frame <- fetch(result, n = 10)
+\f1 \
+
+\f0 print(data.frame)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 setwd(here())
+\f1 \
+
+\f0 Penna <- read.csv(here("Penna.csv"), colClasses = c(timestamp = "POSIXct"))
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 # newPenna procedure
+\f1 \
+
+\f0 newPenna <- function(in_newPenna, in_date) \{
+\f1 \
+
+\f0 \'a0 data_subset <- Penna %>%
+\f1 \
+
+\f0 \'a0\'a0\'a0 filter(precinct == in_newPenna, as.Date(timestamp) == as.Date(in_date))
+\f1 \
+
+\f0 \'a0 
+\f1 \
+
+\f0 \'a0 if (nrow(data_subset) == 0) \{
+\f1 \
+
+\f0 \'a0\'a0\'a0 stop("Incorrect precinct")
+\f1 \
+
+\f0 \'a0 \}
+\f1 \
+
+\f0 \'a0 
+\f1 \
+
+\f0 \'a0 new_row <- data.frame(
+\f1 \
+
+\f0 \'a0\'a0\'a0 precinct = in_newPenna,
+\f1 \
+
+\f0 \'a0\'a0\'a0 Timestamp = in_date,
+\f1 \
+
+\f0 \'a0\'a0\'a0 newvotes = data_subset$totalvotes - data_subset$old_totalvotes,
+\f1 \
+
+\f0 \'a0\'a0\'a0 new_Trump = data_subset$Trump - data_subset$old_Trump,
+\f1 \
+
+\f0 \'a0\'a0\'a0 new_Biden = data_subset$Biden - data_subset$old_Biden
+\f1 \
+
+\f0 \'a0 )
+\f1 \
+
+\f0 \'a0 newPenna <<- rbind(newPenna, new_row)
+\f1 \
+
+\f0 \}\'a0 
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 newPenna('Hanover', '2020-11-06 19:10:53')
+\f1 \
+
+\f0 print(newPenna())
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 switch_result <- Penna %>%
+\f1 \
+
+\f0 \'a0 filter(timestamp < max(timestamp) & 
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0 as.Date(timestamp) >= (max(timestamp) - 24 * 60 * 60) &
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0\'a0 Biden < Trump) %>%
+\f1 \
+
+\f0 \'a0 select(precinct, Timestamp = timestamp, fromCandidate = 'Trump', toCandidate = 'Biden')
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 print(switch_result)
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 ggplot(Penna, aes(x = as.Date(timestamp), y = totalvotes)) +
+\f1 \
+
+\f0 \'a0 geom_line() +
+\f1 \
+
+\f0 \'a0 labs(title = "Total Votes Over Time",
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0\'a0 x = "Date",
+\f1 \
+
+\f0 \'a0\'a0\'a0\'a0\'a0\'a0 y = "Total Votes")
+\f1 \
+
+\f0 \'a0
+\f1 \
+
+\f0 head(Penna)
+\f1 \
+}
